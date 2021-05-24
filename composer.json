@@ -13,5 +13,10 @@
             "name": "Benoit Viguier",
             "email": "benoit.viguier.pro@gmail.com"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": {
+            "bviguier\\ncurses\\": "src/"
+        }
+    }
 }
