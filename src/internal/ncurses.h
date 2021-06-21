@@ -1,4 +1,5 @@
 typedef unsigned chtype;
+typedef unsigned mmask_t;
 typedef int NCURSES_ATTR_T;
 typedef short NCURSES_PAIRS_T;
 typedef short NCURSES_COLOR_T;
@@ -9,6 +10,7 @@ typedef void FILE;
 
 extern WINDOW * stdscr;
 extern int LINES;
+extern int COLS;
 
 int addch (const chtype);
 int addchnstr (const chtype *, int);
@@ -283,3 +285,14 @@ int getmaxx (const WINDOW *);
 int getmaxy (const WINDOW *);
 int getparx (const WINDOW *);
 int getpary (const WINDOW *);
+
+typedef struct
+{
+    short id;		/* ID to distinguish multiple devices */
+    int x, y, z;	/* event coordinates (character-cell) */
+    mmask_t bstate;	/* button state bits */
+} MEVENT;
+
+mmask_t mousemask (mmask_t, mmask_t *);
+int getmouse(MEVENT *);
+int keypad (WINDOW *,bool);

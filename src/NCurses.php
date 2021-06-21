@@ -155,6 +155,32 @@ class NCurses
     public const KEY_EVENT = 0633;  /* We were interrupted by an event */
     public const KEY_MAX = 0777;  /* Maximum key value is 0633 */
 
+    public const BUTTON1_PRESSED = 2;
+    public const BUTTON1_RELEASED = 1;
+    public const BUTTON1_CLICKED = 4;
+    public const BUTTON1_DOUBLE_CLICKED = 8;
+    public const BUTTON1_TRIPLE_CLICKED = 16;
+    public const BUTTON2_PRESSED = 128;
+    public const BUTTON2_RELEASED = 64;
+    public const BUTTON2_CLICKED = 256;
+    public const BUTTON2_DOUBLE_CLICKED = 512;
+    public const BUTTON2_TRIPLE_CLICKED = 1024;
+    public const BUTTON3_PRESSED = 8192;
+    public const BUTTON3_RELEASED = 4096;
+    public const BUTTON3_CLICKED = 16384;
+    public const BUTTON3_DOUBLE_CLICKED = 32768;
+    public const BUTTON3_TRIPLE_CLICKED = 65536;
+    public const BUTTON4_PRESSED = 524288;
+    public const BUTTON4_RELEASED = 262144;
+    public const BUTTON4_CLICKED = 1048576;
+    public const BUTTON4_DOUBLE_CLICKED = 2097152;
+    public const BUTTON4_TRIPLE_CLICKED = 4194304;
+    public const BUTTON_SHIFT = 33554432;
+    public const BUTTON_CTRL = 16777216;
+    public const BUTTON_ALT = 67108864;
+    public const ALL_MOUSE_EVENTS = 171798691839;
+    public const REPORT_MOUSE_POSITION = 134217728;
+
     public function KEY_F(int $n): int
     {
         return self::KEY_F0 + $n; /* Value of function key n */
@@ -175,6 +201,11 @@ class NCurses
         return $this->ffi->mvprintw($y, $y, $fmt, ...$args);
     }
 
+    public function mvwprintw(Window $win, int $y, int $x, string $fmt, ...$args): int
+    {
+        return $this->ffi->mvwprintw($win->cdata(), $y, $x, $fmt, ...$args);
+    }
+
     public function refresh(): int
     {
         return $this->ffi->refresh();
@@ -185,9 +216,14 @@ class NCurses
         return $this->ffi->getch();
     }
 
+    public function wgetch(Window $win): int
+    {
+        return $this->ffi->wgetch($win->cdata());
+    }
+
     public function getstr(string &$str): int
     {
-        if(0 === $length = strlen($str)) {
+        if (0 === $length = strlen($str)) {
             return self::ERR;
         }
 
@@ -213,9 +249,24 @@ class NCurses
         return $this->ffi->LINES;
     }
 
+    public function COLS(): int
+    {
+        return $this->ffi->COLS;
+    }
+
     public function raw(): int
     {
         return $this->ffi->raw();
+    }
+
+    public function cbreak(): int
+    {
+        return $this->ffi->cbreak();
+    }
+
+    public function nocbreak(): int
+    {
+        return $this->ffi->nocbreak();
     }
 
     public function noecho(): int
@@ -236,6 +287,16 @@ class NCurses
     public function attron(int $attrs): int
     {
         return $this->ffi->attron($attrs);
+    }
+
+    public function wattron(Window $win, int $attrs): int
+    {
+        return $this->ffi->wattron($win->cdata(), $attrs);
+    }
+
+    public function wattroff(Window $win, int $attrs): int
+    {
+        return $this->ffi->wattroff($win->cdata(), $attrs);
     }
 
     public function attrset(int $attrs): int
@@ -317,9 +378,106 @@ class NCurses
         return $this->ffi->clear();
     }
 
+    public function clrtoeol(): int
+    {
+        return $this->ffi->clrtoeol();
+    }
+
     public function move(int $y, int $x): int
     {
         return $this->ffi->move($y, $x);
+    }
+
+    public function start_color(): int
+    {
+        return $this->ffi->start_color();
+    }
+
+    public function has_colors(): bool
+    {
+        return $this->ffi->has_colors();
+    }
+
+    public function init_pair(int $pair, int $fg, int $bg): int
+    {
+        return $this->ffi->init_pair($pair, $fg, $bg);
+    }
+
+    public function mvchgat(int $y, int $x, int $n, int $attr, int $pair, $opts): int
+    {
+        return $this->ffi->mvchgat($y, $x, $n, $attr, $pair, null);
+    }
+
+    public function newwin(int $nlines, int $ncols, int $begin_y, int $begin_x): Window
+    {
+        return new Window($this->ffi->newwin($nlines, $ncols, $begin_y, $begin_x));
+    }
+
+    public function delwin(Window $win): int
+    {
+        return $this->ffi->delwin($win->cdata());
+    }
+
+    public function wrefresh(Window $win): int
+    {
+        return $this->ffi->wrefresh($win->cdata());
+    }
+
+    public function wborder(Window $win, string $ls, string $rs, string $ts, string $bs, string $tl, string $tr, string $bl, string $br): int
+    {
+        return $this->ffi->wborder($win->cdata(), ord($ls), ord($rs), ord($ts), ord($bs), ord($tl), ord($tr), ord($bl), ord($br));
+    }
+
+    public function box(Window $win, string $verch, string $horch): int
+    {
+        return $this->ffi->box($win->cdata(), $verch, $horch);
+    }
+
+    public function COLOR_PAIR(int $n): int
+    {
+        return $this->ffi->COLOR_PAIR($n);
+    }
+
+    public function mvaddch(int $y, int $x, string $ch): int
+    {
+        return $this->ffi->mvaddch($y, $x, ord($ch));
+    }
+
+    public function mvhline(int $y, int $x, string $ch, int $n): int
+    {
+        return $this->ffi->mvhline($y, $x, ord($ch), $n);
+    }
+
+    public function mvvline(int $y, int $x, string $ch, int $n): int
+    {
+        return $this->ffi->mvvline($y, $x, ord($ch), $n);
+    }
+
+    public function mousemask(int $newmask, int &$oldmask = null): int
+    {
+        if($oldmask === null) {
+            return $this->ffi->mousemask($newmask, null);
+        }
+
+        $ptr = $this->ffi->new('mmask_t');
+        $result = $this->ffi->mousemask($newmask, \FFI::addr($ptr));
+        $oldmask = $ptr->cdata;
+
+        return $result;
+    }
+
+    public function getmouse(MEvent &$event): int
+    {
+        $ptr = $this->ffi->new('MEVENT');
+        $result = $this->ffi->getmouse(\FFI::addr($ptr));
+
+        $event->id = $ptr->id;
+        $event->x = $ptr->x;
+        $event->y = $ptr->y;
+        $event->z = $ptr->z;
+        $event->bstate = $ptr->bstate;
+
+        return $result;
     }
 
     private \FFI $ffi;
